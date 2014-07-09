@@ -93,8 +93,6 @@ if (isset($string) && strlen($string) > 0){
 	$columns = isset($columns) ? explode(',', $columns) : 'all';
 	//Хитро-мудро для array_intersect_key
 	if (is_array($columns)){$columns = array_combine($columns, $columns);}
-	$sortDir = isset($sortDir) ? strtoupper($sortDir) : false;
-	if (!isset($sortBy)){$sortBy = '0';}
 	if (!isset($rowGlue)){$rowGlue = '';}
 	if (!isset($colGlue)){$colGlue = '';}
 	$removeEmptyRows = (isset($removeEmptyRows) && $removeEmptyRows == '0') ? false : true;
@@ -146,7 +144,11 @@ if (isset($string) && strlen($string) > 0){
 	//Если что-то есть (могло ничего не остаться после удаления пустых и/или получения по значениям)
 	if (count($res) > 0){
 		//Если надо сортировать
-		if ($sortDir !== false){
+		if (isset($sortDir)){
+			$sortDir = strtoupper($sortDir);
+			
+			if (!isset($sortBy)){$sortBy = '0';}
+			
 			//Если надо в случайном порядке - шафлим
 			if ($sortDir == 'RAND'){
 				shuffle($res);
