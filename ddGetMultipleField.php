@@ -101,7 +101,6 @@ if (isset($string) && strlen($string) > 0){
 	$removeEmptyCols = (isset($removeEmptyCols) && $removeEmptyCols == '0') ? false : true;
 	$urlencode = (isset($urlencode) && $urlencode == '1') ? true : false;
 	$outputFormat = isset($outputFormat) ? strtolower($outputFormat) : 'html';
-	$colTpl = isset($colTpl) ? explode(',', $colTpl) : false;
 	
 	//Разбиваем на строки
 	$res = $rowDelimiterIsRegexp ? preg_split($rowDelimiter, $string) : explode($rowDelimiter, $string);
@@ -141,16 +140,6 @@ if (isset($string) && strlen($string) > 0){
 	
 	//Сбрасываем ключи массива (пригодится для выборки конкретного значения)
 	$res = array_values($res);
-	
-	//Если шаблоны колонок заданы, но их не хватает
-	if ($colTpl !== false){
-		if (($temp = count($res[0]) - count($colTpl)) > 0){
-			//Дозабьём недостающие последним
-			$colTpl = array_merge($colTpl, array_fill($temp - 1, $temp, $colTpl[count($colTpl) - 1]));
-		}
-		
-		$colTpl = str_replace('null', '', $colTpl);
-	}
 	
 	$result = '';
 	
@@ -212,6 +201,20 @@ if (isset($string) && strlen($string) > 0){
 			
 			//Если вывод просто в формате html
 			if ($outputFormat == 'html' || $outputFormat == 'htmlarray'){
+				//Шаблоны колонок
+				$colTpl = isset($colTpl) ? explode(',', $colTpl) : false;
+				
+				//Если шаблоны колонок заданы, но их не хватает
+				if ($colTpl !== false){
+					if (($temp = count($res[0]) - count($colTpl)) > 0){
+						//Дозабьём недостающие последним
+						$colTpl = array_merge($colTpl, array_fill($temp - 1, $temp, $colTpl[count($colTpl) - 1]));
+					}
+					
+					$colTpl = str_replace('null', '', $colTpl);
+				}
+				
+				//Если задан шаблон строки
 				if (isset($rowTpl)){
 					//Перебираем строки
 					foreach ($res as $key => $val){
