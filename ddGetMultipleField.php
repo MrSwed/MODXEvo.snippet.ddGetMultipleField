@@ -58,8 +58,6 @@ if (isset($string) && strlen($string) > 0){
 	$rowDelimiterIsRegexp = (filter_var($rowDelimiter, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^\/.*\/[a-z]*$/'))) !== false) ? true : false;
 	$colDelimiterIsRegexp = (filter_var($colDelimiter, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^\/.*\/[a-z]*$/'))) !== false) ? true : false;
 	
-	if (!isset($startRow) || !is_numeric($startRow)){$startRow = '0';}
-	
 	//Если заданы условия фильтрации
 	if (isset($filter)){
 		//Разбиваем по условиям
@@ -89,7 +87,6 @@ if (isset($string) && strlen($string) > 0){
 		$filter = false;
 	}
 	
-	if (!isset($totalRows) || !is_numeric($totalRows)){$totalRows = 'all';}
 	$columns = isset($columns) ? explode(',', $columns) : 'all';
 	//Хитро-мудро для array_intersect_key
 	if (is_array($columns)){$columns = array_combine($columns, $columns);}
@@ -161,8 +158,13 @@ if (isset($string) && strlen($string) > 0){
 			}
 		}
 		
+		if (!isset($startRow) || !is_numeric($startRow)){$startRow = '0';}
+		
 		//Обрабатываем слишком большой индекс
 		if (!isset($res[$startRow])){$startRow = count($res) - 1;}
+		
+		//Если общее количество элементов не задано или задано плохо, читаем, что нужны все
+		if (!isset($totalRows) || !is_numeric($totalRows)){$totalRows = 'all';}
 		
 		//Если нужны все элементы
 		if ($totalRows == 'all'){
