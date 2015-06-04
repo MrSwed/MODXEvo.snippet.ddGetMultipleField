@@ -27,7 +27,7 @@
  * @param $rowGlue {string} - The string that combines rows while rendering. It can be used along with “rowTpl”. Default: ''.
  * @param $colGlue {string} - The string that combines columns while rendering. It can be used along with “colTpl”, but not with “rowTpl” for obvious reasons. Default: ''.
  * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+col0+],[+col1+],… (column values). Default: ''.
- * @param $colTpl {comma separated string: chunkName; 'null'} - The comma-separated list of templates for column rendering (“outputFormat” has to be == 'html'). If the number of templates is lesser than the number of columns then the last passed template will be used to render the rest of the columns. 'null' specifies rendering without a template. Available placeholder: [+val+]. Default: ''.
+ * @param $colTpl {comma separated string: chunkName; 'null'} - The comma-separated list of templates for column rendering (“outputFormat” has to be == 'html'). If the number of templates is lesser than the number of columns then the last passed template will be used to render the rest of the columns. 'null' specifies rendering without a template. Available placeholders: [+val+], [+rowNumber+] (index of current row, starts at 1). Default: ''.
  * @param $outerTpl {string: chunkName} - Wrapper template (“outputFormat” has to be != 'array'). Available placeholders: [+result+], [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+rowY.colX+] (“Y” — row number, “X” — column number). Default: ''.
  * @param $placeholders {separated string} - Additional data has to be passed into “outerTpl”. Syntax: string separated with '::' between key and value and '||' between key-value pairs. Default: ''.
  * @param $urlencode {0; 1} - Is it required to URL encode the result? “outputFormat” has to be != 'array'. URL encoding is used according to RFC 3986. Default: 0.
@@ -222,7 +222,13 @@ if (isset($string) && strlen($string) > 0){
 				if (isset($rowTpl)){
 					//Перебираем строки
 					foreach ($res as $key => $val){
-						$resTemp[$key] = array();
+						$resTemp[$key] = array(
+							//Запишем номер строки
+							'rowNumber' => $key + 1,
+							//И общее количество элементов
+							'total' => $total,
+							'resultTotal' => $resultTotal
+						);
 						
 						//Перебираем колонки
 						foreach ($val as $k => $v){
@@ -232,18 +238,16 @@ if (isset($string) && strlen($string) > 0){
 							}else{
 								//Если есть шаблоны значений колонок
 								if ($colTpl !== false && strlen($colTpl[$k]) > 0){
-									$resTemp[$key]['col'.$k] = $modx->parseChunk($colTpl[$k], array('val' => $v), '[+', '+]');
+									$resTemp[$key]['col'.$k] = $modx->parseChunk($colTpl[$k], array(
+										'val' => $v,
+										'rowNumber' => $resTemp[$key]['rowNumber']
+									), '[+', '+]');
 								}else{
 									$resTemp[$key]['col'.$k] = $v;
 								}
 							}
 						}
 						
-						//Запишем номер строки
-						$resTemp[$key]['rowNumber'] = $key + 1;
-						//И общее количество элементов
-						$resTemp[$key]['total'] = $total;
-						$resTemp[$key]['resultTotal'] = $resultTotal;
 						$resTemp[$key] = $modx->parseChunk($rowTpl, $resTemp[$key], '[+', '+]');
 					}
 				}else{
@@ -254,7 +258,10 @@ if (isset($string) && strlen($string) > 0){
 								if ($removeEmptyCols && !strlen($v)){
 									unset($val[$k]);
 								}else if (strlen($colTpl[$k]) > 0){
-									$val[$k] = $modx->parseChunk($colTpl[$k], array('val' => $v), '[+', '+]');
+									$val[$k] = $modx->parseChunk($colTpl[$k], array(
+										'val' => $v,
+										'rowNumber' => $key + 1
+									), '[+', '+]');
 								}
 							}
 						}
