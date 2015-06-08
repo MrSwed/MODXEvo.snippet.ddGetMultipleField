@@ -65,23 +65,23 @@ if (isset($string) && strlen($string) > 0){
 		
 		$filter = array();
 		
-		foreach ($temp as $val){
+		foreach ($temp as $value){
 			//Разбиваем по колонке/значению
-			$val = explode('::', $val);
+			$value = explode('::', $value);
 			
 			//Если указали просто значение (значит, это нулевая колонка) TODO: Удалить через пару версий.
-			if (count($val) < 2){
-				$val[1] = $val[0];
-				$val[0] = '0';
+			if (count($value) < 2){
+				$value[1] = $value[0];
+				$value[0] = '0';
 			}
 			
 			//Если ни одно правило для этой колонки ещй не задано
-			if (!isset($filter[$val[0]])){
-				$filter[$val[0]] = array();
+			if (!isset($filter[$value[0]])){
+				$filter[$value[0]] = array();
 			}
 			
 			//Добавляем правило для соответствующей колонки
-			$filter[$val[0]][] = $val[1];
+			$filter[$value[0]][] = $value[1];
 		}
 	}else{
 		$filter = false;
@@ -98,22 +98,22 @@ if (isset($string) && strlen($string) > 0){
 	$outputFormat = isset($outputFormat) ? strtolower($outputFormat) : 'html';
 	
 	//Разбиваем на строки
-	$res = $rowDelimiterIsRegexp ? preg_split($rowDelimiter, $string) : explode($rowDelimiter, $string);
+	$data = $rowDelimiterIsRegexp ? preg_split($rowDelimiter, $string) : explode($rowDelimiter, $string);
 	
 	//Общее количество строк
-	$total = count($res);
+	$total = count($data);
 	
 	//Перебираем строки, разбиваем на колонки
-	foreach ($res as $key => $val){
-		$res[$key] = $colDelimiterIsRegexp ? preg_split($colDelimiter, $val) : explode($colDelimiter, $val);
+	foreach ($data as $rowNumber => $row){
+		$data[$rowNumber] = $colDelimiterIsRegexp ? preg_split($colDelimiter, $row) : explode($colDelimiter, $row);
 		
 		//Если необходимо получить какие-то конкретные значения
 		if ($filter !== false){
 			//Перебираем колонки для фильтрации
-			foreach ($filter as $k => $v){
+			foreach ($filter as $columnNumber => $value){
 				//Если текущего значения в списке нет, сносим нафиг
-				if (!in_array($res[$key][$k], $v)){
-					unset($res[$key]);
+				if (!in_array($data[$rowNumber][$columnNumber], $value)){
+					unset($data[$rowNumber]);
 					//Уходим (строку уже снесли, больше ничего не важно)
 					break;
 				}
@@ -121,25 +121,25 @@ if (isset($string) && strlen($string) > 0){
 		}
 		
 		//Если нужно получить какую-то конкретную колонку (также проверяем на то, что строка вообще существует, т.к. она могла быть уже удалена ранее)
-		if ($columns != 'all' && isset($res[$key])){
+		if ($columns != 'all' && isset($data[$rowNumber])){
 			//Выбираем только необходимые колонки + Сбрасываем ключи массива
-			$res[$key] = array_values(array_intersect_key($res[$key], $columns));
+			$data[$rowNumber] = array_values(array_intersect_key($data[$rowNumber], $columns));
 		}
 		
 		//Если нужно удалять пустые строки (также проверяем на то, что строка вообще существует, т.к. она могла быть уже удалена ранее)
-		if ($removeEmptyRows && isset($res[$key])){
+		if ($removeEmptyRows && isset($data[$rowNumber])){
 			//Если строка пустая, удаляем
-			if (strlen(implode('', $res[$key])) == 0){unset($res[$key]);}
+			if (strlen(implode('', $data[$rowNumber])) == 0){unset($data[$rowNumber]);}
 		}
 	}
 	
 	//Сбрасываем ключи массива (пригодится для выборки конкретного значения)
-	$res = array_values($res);
+	$data = array_values($data);
 	
 	$result = '';
 	
 	//Если что-то есть (могло ничего не остаться после удаления пустых и/или получения по значениям)
-	if (count($res) > 0){
+	if (count($data) > 0){
 		//Если надо сортировать
 		if (isset($sortDir)){
 			$sortDir = strtoupper($sortDir);
@@ -148,33 +148,33 @@ if (isset($string) && strlen($string) > 0){
 			
 			//Если надо в случайном порядке - шафлим
 			if ($sortDir == 'RAND'){
-				shuffle($res);
+				shuffle($data);
 			//Если надо просто в обратном порядке
 			}else if ($sortDir == 'REVERSE'){
-				$res = array_reverse($res);
+				$data = array_reverse($data);
 			}else{
 				//Сортируем результаты
-				$res = ddTools::sort2dArray($res, explode(',', $sortBy), ($sortDir == 'ASC') ? 1 : -1);
+				$data = ddTools::sort2dArray($data, explode(',', $sortBy), ($sortDir == 'ASC') ? 1 : -1);
 			}
 		}
 		
 		if (!isset($startRow) || !is_numeric($startRow)){$startRow = '0';}
 		
 		//Обрабатываем слишком большой индекс
-		if (!isset($res[$startRow])){$startRow = count($res) - 1;}
+		if (!isset($data[$startRow])){$startRow = count($data) - 1;}
 		
 		//Если общее количество элементов не задано или задано плохо, читаем, что нужны все
 		if (!isset($totalRows) || !is_numeric($totalRows)){$totalRows = 'all';}
 		
 		//Если нужны все элементы
 		if ($totalRows == 'all'){
-			$res = array_slice($res, $startRow);
+			$data = array_slice($data, $startRow);
 		}else{
-			$res = array_slice($res, $startRow, $totalRows);
+			$data = array_slice($data, $startRow, $totalRows);
 		}
 		
 		//Общее количество возвращаемых строк
-		$resultTotal = count($res);
+		$resultTotal = count($data);
 		
 		//Плэйсхолдер с общим количеством
 		if (isset($totalRowsToPlaceholder)){
@@ -186,12 +186,12 @@ if (isset($string) && strlen($string) > 0){
 			$typography = explode(',', $typography);
 			
 			//Придётся ещё раз перебрать результат
-			foreach ($res as $key => $val){
+			foreach ($data as $rowNumber => $row){
 				//Перебираем колонки, заданные для типографирования
 				foreach ($typography as $v){
 					//Если такая колонка существует, типографируем
-					if (isset($res[$key][$v])){
-						$res[$key][$v] = $modx->runSnippet('ddTypograph', array('text' => $res[$key][$v]));
+					if (isset($data[$rowNumber][$v])){
+						$data[$rowNumber][$v] = $modx->runSnippet('ddTypograph', array('text' => $data[$rowNumber][$v]));
 					}
 				}
 			}
@@ -199,7 +199,7 @@ if (isset($string) && strlen($string) > 0){
 		
 		//Если вывод в массив
 		if ($outputFormat == 'array'){
-			$result = $res;
+			$result = $data;
 		}else{
 			$resTemp = array();
 			
@@ -210,7 +210,7 @@ if (isset($string) && strlen($string) > 0){
 				
 				//Если шаблоны колонок заданы, но их не хватает
 				if ($colTpl !== false){
-					if (($temp = count($res[0]) - count($colTpl)) > 0){
+					if (($temp = count($data[0]) - count($colTpl)) > 0){
 						//Дозабьём недостающие последним
 						$colTpl = array_merge($colTpl, array_fill($temp - 1, $temp, $colTpl[count($colTpl) - 1]));
 					}
@@ -221,54 +221,54 @@ if (isset($string) && strlen($string) > 0){
 				//Если задан шаблон строки
 				if (isset($rowTpl)){
 					//Перебираем строки
-					foreach ($res as $key => $val){
-						$resTemp[$key] = array(
+					foreach ($data as $rowNumber => $row){
+						$resTemp[$rowNumber] = array(
 							//Запишем номер строки
-							'rowNumber.zeroBased' => $key,
-							'rowNumber' => $key + 1,
+							'rowNumber.zeroBased' => $rowNumber,
+							'rowNumber' => $rowNumber + 1,
 							//И общее количество элементов
 							'total' => $total,
 							'resultTotal' => $resultTotal
 						);
 						
 						//Перебираем колонки
-						foreach ($val as $k => $v){
+						foreach ($row as $columnNumber => $column){
 							//Если нужно удалять пустые значения
-							if ($removeEmptyCols && !strlen($v)){
-								$resTemp[$key]['col'.$k] = '';
+							if ($removeEmptyCols && !strlen($column)){
+								$resTemp[$rowNumber]['col'.$columnNumber] = '';
 							}else{
 								//Если есть шаблоны значений колонок
-								if ($colTpl !== false && strlen($colTpl[$k]) > 0){
-									$resTemp[$key]['col'.$k] = $modx->parseChunk($colTpl[$k], array(
-										'val' => $v,
-										'rowNumber.zeroBased' => $resTemp[$key]['rowNumber.zeroBased'],
-										'rowNumber' => $resTemp[$key]['rowNumber']
+								if ($colTpl !== false && strlen($colTpl[$columnNumber]) > 0){
+									$resTemp[$rowNumber]['col'.$columnNumber] = $modx->parseChunk($colTpl[$columnNumber], array(
+										'val' => $column,
+										'rowNumber.zeroBased' => $resTemp[$rowNumber]['rowNumber.zeroBased'],
+										'rowNumber' => $resTemp[$rowNumber]['rowNumber']
 									), '[+', '+]');
 								}else{
-									$resTemp[$key]['col'.$k] = $v;
+									$resTemp[$rowNumber]['col'.$columnNumber] = $column;
 								}
 							}
 						}
 						
-						$resTemp[$key] = $modx->parseChunk($rowTpl, $resTemp[$key], '[+', '+]');
+						$resTemp[$rowNumber] = $modx->parseChunk($rowTpl, $resTemp[$rowNumber], '[+', '+]');
 					}
 				}else{
-					foreach ($res as $key => $val){
+					foreach ($data as $rowNumber => $row){
 						//Если есть шаблоны значений колонок
 						if ($colTpl !== false){
-							foreach ($val as $k => $v){
-								if ($removeEmptyCols && !strlen($v)){
-									unset($val[$k]);
-								}else if (strlen($colTpl[$k]) > 0){
-									$val[$k] = $modx->parseChunk($colTpl[$k], array(
-										'val' => $v,
-										'rowNumber.zeroBased' => $key,
-										'rowNumber' => $key + 1
+							foreach ($row as $columnNumber => $column){
+								if ($removeEmptyCols && !strlen($column)){
+									unset($row[$columnNumber]);
+								}else if (strlen($colTpl[$columnNumber]) > 0){
+									$row[$columnNumber] = $modx->parseChunk($colTpl[$columnNumber], array(
+										'val' => $column,
+										'rowNumber.zeroBased' => $rowNumber,
+										'rowNumber' => $rowNumber + 1
 									), '[+', '+]');
 								}
 							}
 						}
-						$resTemp[$key] = implode($colGlue, $val);
+						$resTemp[$rowNumber] = implode($colGlue, $row);
 					}
 				}
 				
@@ -279,7 +279,7 @@ if (isset($string) && strlen($string) > 0){
 				}
 			//Если вывод в формате JSON
 			}else if ($outputFormat == 'json'){
-				$resTemp = $res;
+				$resTemp = $data;
 				
 				//Если нужно выводить только одну колонку
 				if ($columns != 'all' && count($columns) == 1){
@@ -305,11 +305,11 @@ if (isset($string) && strlen($string) > 0){
 				$resTemp['result'] = $result;
 				
 				//Преобразуем результат в одномерный массив
-				$res = ddTools::unfoldArray($res);
+				$data = ddTools::unfoldArray($data);
 				
 				//Добавляем 'row' и 'val' к ключам
-				foreach ($res as $key => $val){
-					 $resTemp[preg_replace('/(\d)\.(\d)/', 'row$1.col$2', $key)] = $val;
+				foreach ($data as $rowNumber => $row){
+					 $resTemp[preg_replace('/(\d)\.(\d)/', 'row$1.col$2', $rowNumber)] = $row;
 				}
 				
 				//Если есть дополнительные данные
