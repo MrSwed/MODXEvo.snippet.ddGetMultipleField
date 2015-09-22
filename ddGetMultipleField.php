@@ -29,7 +29,7 @@
  * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+rowNumber.zeroBased+] (index of current row, starts at 0), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+col0+],[+col1+],… (column values). Default: ''.
  * @param $colTpl {comma separated string: chunkName; 'null'} - The comma-separated list of templates for column rendering (“outputFormat” has to be == 'html'). If the number of templates is lesser than the number of columns then the last passed template will be used to render the rest of the columns. 'null' specifies rendering without a template. Available placeholders: [+val+], [+rowNumber+] (index of current row, starts at 1), [+rowNumber.zeroBased+] (index of current row, starts at 0). Default: ''.
  * @param $outerTpl {string: chunkName} - Wrapper template (“outputFormat” has to be != 'array'). Available placeholders: [+result+], [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+rowY.colX+] (“Y” — row number, “X” — column number). Default: ''.
- * @param $placeholders {separated string} - Additional data has to be passed into “outerTpl”. Syntax: string separated with '::' between key and value and '||' between key-value pairs. Default: ''.
+ * @param $placeholders {separated string} - Additional data has to be passed into “outerTpl”, “rowTpl” and “colTpl”. Syntax: string separated with '::' between key and value and '||' between key-value pairs. Default: ''.
  * @param $urlencode {0; 1} - Is it required to URL encode the result? “outputFormat” has to be != 'array'. URL encoding is used according to RFC 3986. Default: 0.
  * @param $totalRowsToPlaceholder {string} - The name of the global MODX placeholder that holds the total number of rows. The placeholder won't be set if “totalRowsToPlaceholder” is empty. Default: ''.
  * @param $resultToPlaceholder {string} - The name of the global MODX placeholder that holds the snippet result. The result will be returned in a regular manner if the parameter is empty. Default: ''.
@@ -203,6 +203,9 @@ if (isset($string) && strlen($string) > 0){
 		}else{
 			$resTemp = array();
 			
+			//Дополнительные данные
+			$placeholders = isset($placeholders) ? ddTools::explodeAssoc($placeholders) : array();
+			
 			//Если вывод просто в формате html
 			if ($outputFormat == 'html' || $outputFormat == 'htmlarray'){
 				//Шаблоны колонок
@@ -239,18 +242,18 @@ if (isset($string) && strlen($string) > 0){
 							}else{
 								//Если есть шаблоны значений колонок
 								if ($colTpl !== false && strlen($colTpl[$columnNumber]) > 0){
-									$resTemp[$rowNumber]['col'.$columnNumber] = $modx->parseChunk($colTpl[$columnNumber], array(
+									$resTemp[$rowNumber]['col'.$columnNumber] = $modx->parseChunk($colTpl[$columnNumber], array_merge(array(
 										'val' => $column,
 										'rowNumber.zeroBased' => $resTemp[$rowNumber]['rowNumber.zeroBased'],
 										'rowNumber' => $resTemp[$rowNumber]['rowNumber']
-									), '[+', '+]');
+									), $placeholders), '[+', '+]');
 								}else{
 									$resTemp[$rowNumber]['col'.$columnNumber] = $column;
 								}
 							}
 						}
 						
-						$resTemp[$rowNumber] = $modx->parseChunk($rowTpl, $resTemp[$rowNumber], '[+', '+]');
+						$resTemp[$rowNumber] = $modx->parseChunk($rowTpl, array_merge($resTemp[$rowNumber], $placeholders), '[+', '+]');
 					}
 				}else{
 					foreach ($data as $rowNumber => $row){
@@ -260,11 +263,11 @@ if (isset($string) && strlen($string) > 0){
 								if ($removeEmptyCols && !strlen($column)){
 									unset($row[$columnNumber]);
 								}else if (strlen($colTpl[$columnNumber]) > 0){
-									$row[$columnNumber] = $modx->parseChunk($colTpl[$columnNumber], array(
+									$row[$columnNumber] = $modx->parseChunk($colTpl[$columnNumber], array_merge(array(
 										'val' => $column,
 										'rowNumber.zeroBased' => $rowNumber,
 										'rowNumber' => $rowNumber + 1
-									), '[+', '+]');
+									), $placeholders), '[+', '+]');
 								}
 							}
 						}
@@ -312,10 +315,7 @@ if (isset($string) && strlen($string) > 0){
 					 $resTemp[preg_replace('/(\d)\.(\d)/', 'row$1.col$2', $rowNumber)] = $row;
 				}
 				
-				//Если есть дополнительные данные
-				if (isset($placeholders)){
-					$resTemp = array_merge($resTemp, ddTools::explodeAssoc($placeholders));
-				}
+				$resTemp = array_merge($resTemp, $placeholders);
 				
 				$resTemp['total'] = $total;
 				$resTemp['resultTotal'] = $resultTotal;
