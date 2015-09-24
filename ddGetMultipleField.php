@@ -49,6 +49,8 @@ if (isset($docField)){
 	$string = $string[$docField];
 }
 
+$result = '';
+
 //Если задано значение поля
 if (isset($string) && strlen($string) > 0){
 	if (!isset($rowDelimiter)){$rowDelimiter = '||';}
@@ -135,8 +137,6 @@ if (isset($string) && strlen($string) > 0){
 	
 	//Сбрасываем ключи массива (пригодится для выборки конкретного значения)
 	$data = array_values($data);
-	
-	$result = '';
 	
 	//Если что-то есть (могло ничего не остаться после удаления пустых и/или получения по значениям)
 	if (count($data) > 0){
@@ -328,12 +328,12 @@ if (isset($string) && strlen($string) > 0){
 			}
 		}
 	}
-	
-	//Если надо, выводим в плэйсхолдер
-	if (isset($resultToPlaceholder)){
-		$modx->setPlaceholder($resultToPlaceholder, $result);
-	}else{
-		return $result;
-	}
+}
+
+//Если надо, выводим в плэйсхолдер
+if (isset($resultToPlaceholder)){
+	$modx->setPlaceholder($resultToPlaceholder, $result);
+}else{
+	return $result;
 }
 ?>
