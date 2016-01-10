@@ -319,5 +319,6 @@ if (isset($string) && strlen($string) > 0){
 		return $result;
 	}
 }
-return false;
+// выдать пустой результат, еслы ранее не было завершения сниппета.
+return '';
 ?>
