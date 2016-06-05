@@ -7,7 +7,7 @@
  * @note The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
  * 
  * @uses MODX >= 1.0.13.
- * @uses The library modx.ddTools 0.12.
+ * @uses The library modx.ddTools 0.15.3.
  * @uses The snippet ddTypograph 1.4.3 (if typographing is required).
  * 
  * @param $inputString {separated string} - The input string containing separated values. @required
@@ -41,8 +41,15 @@
  * http://www.DivanDesign.biz
  */
 
+$ddToolsPath = $modx->getConfig('base_path').'assets/libs/ddTools/modx.ddtools.class.php';
+
+if (!file_exists($ddToolsPath)){
+	$ddToolsPath = str_replace('assets/libs/', 'assets/snippets/', $ddToolsPath);
+	$modx->logEvent(1, 2, '<p>Please update the “<a href="http://code.divandesign.biz/modx/ddtools">modx.ddTools</a>” library.</p><p>The snippet has been called in the document with id '.$modx->documentIdentifier.'.</p>', $modx->currentSnippet);
+}
+
 //Подключаем modx.ddTools
-require_once $modx->getConfig('base_path').'assets/snippets/ddTools/modx.ddtools.class.php';
+require_once $ddToolsPath;
 
 //Для обратной совместимости
 extract(ddTools::verifyRenamedParams($params, array(
