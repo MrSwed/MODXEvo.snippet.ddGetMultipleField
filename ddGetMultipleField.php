@@ -347,7 +347,9 @@ if (isset($string) && strlen($string) > 0){
 //Если надо, выводим в плэйсхолдер
 if (isset($resultToPlaceholder)){
 	$modx->setPlaceholder($resultToPlaceholder, $result);
-}else{
-	return $result;
+	
+	$result = '';
 }
+
+return $result;
 ?>
