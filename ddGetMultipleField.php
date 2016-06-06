@@ -30,7 +30,7 @@
  * @param $rowTpl {string: chunkName|string} - The template for row rendering (“outputFormat” has to be == 'html'). Use inline templates starting with “@CODE:”. Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+rowNumber.zeroBased+] (index of current row, starts at 0), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+col0+],[+col1+],… (column values). Default: ''.
  * @param $colTpl {comma separated string: chunkName|string; 'null'} - The comma-separated list of templates for column rendering (“outputFormat” has to be == 'html'). Use inline templates starting with “@CODE:”. If the number of templates is lesser than the number of columns then the last passed template will be used to render the rest of the columns. 'null' specifies rendering without a template. Available placeholders: [+val+], [+rowNumber+] (index of current row, starts at 1), [+rowNumber.zeroBased+] (index of current row, starts at 0). Default: ''.
  * @param $outerTpl {string: chunkName|string} - Wrapper template (“outputFormat” has to be != 'array'). Use inline templates starting with “@CODE:”. Available placeholders: [+result+], [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+rowY.colX+] (“Y” — row number, “X” — column number). Default: ''.
- * @param $placeholders {separated string} - Additional data has to be passed into “outerTpl”, “rowTpl” and “colTpl”. Syntax: string separated with '::' between key and value and '||' between key-value pairs. Default: ''.
+ * @param $placeholders {query string} - Additional data as query string (https://en.wikipedia.org/wiki/Query_string) has to be passed into “outerTpl”, “rowTpl” and “colTpl”. E. g. “pladeholder1=value1&pagetitle=My awesome pagetitle!”. Default: ''.
  * @param $urlencode {0; 1} - Is it required to URL encode the result? “outputFormat” has to be != 'array'. URL encoding is used according to RFC 3986. Default: 0.
  * @param $totalRowsToPlaceholder {string} - The name of the global MODX placeholder that holds the total number of rows. The placeholder won't be set if “totalRowsToPlaceholder” is empty. Default: ''.
  * @param $resultToPlaceholder {string} - The name of the global MODX placeholder that holds the snippet result. The result will be returned in a regular manner if the parameter is empty. Default: ''.
@@ -219,7 +219,19 @@ if (isset($inputString) && strlen($inputString) > 0){
 			$resTemp = array();
 			
 			//Дополнительные данные
-			$placeholders = isset($placeholders) ? ddTools::explodeAssoc($placeholders) : array();
+			if (isset($placeholders) && trim($placeholders) != ''){
+				//If “=” exists
+				if (strpos($placeholders, '=') !== false){
+					//Parse a query string
+					parse_str($placeholders, $placeholders);
+				}else{
+					//The old format
+					$placeholders = ddTools::explodeAssoc($placeholders);
+					$modx->logEvent(1, 2, '<p>String separated by “::” && “||” in the “placeholders” parameter is deprecated. Use a <a href="https://en.wikipedia.org/wiki/Query_string)">query string</a>.</p><p>The snippet has been called in the document with id '.$modx->documentIdentifier.'.</p>', $modx->currentSnippet);
+				}
+			}else{
+				$placeholders = array();
+			}
 			
 			//Если вывод просто в формате html
 			if ($outputFormat == 'html' || $outputFormat == 'htmlarray'){
