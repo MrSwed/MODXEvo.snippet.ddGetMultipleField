@@ -1,14 +1,14 @@
 <?php
 /**
  * ddGetMultipleField.php
- * @version 3.2 (2015-06-23)
+ * @version 3.3 (2016-06-06)
  * 
  * @desc A snippet for separated by delimiters data output.
  * @note The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
  * 
  * @uses MODX >= 1.0.13.
  * @uses The library modx.ddTools 0.15.3.
- * @uses The snippet ddTypograph 1.4.3 (if typographing is required).
+ * @uses The snippet ddTypograph 1.4.3 (if typography is required).
  * 
  * @param $inputString {separated string} - The input string containing separated values. @required
  * @param $inputString_docField {string} - The name of the document field/TV which value is required to get. If the parameter is passed then the input string will be taken from the field/TV and “inputString” will be ignored. Default: —.
@@ -35,9 +35,9 @@
  * @param $totalRowsToPlaceholder {string} - The name of the global MODX placeholder that holds the total number of rows. The placeholder won't be set if “totalRowsToPlaceholder” is empty. Default: ''.
  * @param $resultToPlaceholder {string} - The name of the global MODX placeholder that holds the snippet result. The result will be returned in a regular manner if the parameter is empty. Default: ''.
  * 
- * @link http://code.divandesign.biz/modx/ddgetmultiplefield/3.2
+ * @link http://code.divandesign.biz/modx/ddgetmultiplefield/3.3
  * 
- * @copyright 2015, DivanDesign
+ * @copyright 2009–2016 DivanDesign {@link http://www.DivanDesign.biz }
  * http://www.DivanDesign.biz
  */
 
