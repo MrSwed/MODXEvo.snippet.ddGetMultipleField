@@ -10,9 +10,9 @@
  * @uses The library modx.ddTools 0.15.3.
  * @uses The snippet ddTypograph 1.4.3 (if typography is required).
  * 
- * @param $inputString {separated string} - The input string containing separated values. @required
- * @param $inputString_docField {string} - The name of the document field/TV which value is required to get. If the parameter is passed then the input string will be taken from the field/TV and “inputString” will be ignored. Default: —.
- * @param $inputString_docId {integer} - ID of the document which field/TV value is required to get. “inputString_docId” equals the current document id since “inputString_docId” is unset. Default: —.
+ * @param $string {separated string} - The input string containing separated values. @required
+ * @param $docField {string} - The name of the document field/TV which value is required to get. If the parameter is passed then the input string will be taken from the field/TV and “string” will be ignored. Default: —.
+ * @param $docId {integer} - ID of the document which field/TV value is required to get. “docId” equals the current document id since “docId” is unset. Default: —.
  * @param $rowDelimiter {string; regexp} - The input string row delimiter. Default: '||'.
  * @param $colDelimiter {string; regexp} - The input string column delimiter. Default: '::'.
  * @param $startRow {integer} - The index of the initial row (indexes start at 0). Default: 0.
@@ -51,23 +51,16 @@ if (!file_exists($ddToolsPath)){
 //Подключаем modx.ddTools
 require_once $ddToolsPath;
 
-//Для обратной совместимости
-extract(ddTools::verifyRenamedParams($params, array(
-	'inputString' => 'string',
-	'inputString_docField' => 'docField',
-	'inputString_docId' => 'docId'
-)));
-
 //Если задано имя поля, которое необходимо получить
-if (isset($inputString_docField)){
-	$inputString = ddTools::getTemplateVarOutput(array($inputString_docField), $inputString_docId);
-	$inputString = $inputString[$inputString_docField];
+if (isset($docField)){
+	$string = ddTools::getTemplateVarOutput(array($docField), $docId);
+	$string = $string[$docField];
 }
 
 $result = '';
 
 //Если задано значение поля
-if (isset($inputString) && strlen($inputString) > 0){
+if (isset($string) && strlen($string) > 0){
 	if (!isset($rowDelimiter)){$rowDelimiter = '||';}
 	if (!isset($colDelimiter)){$colDelimiter = '::';}
 	
@@ -115,7 +108,7 @@ if (isset($inputString) && strlen($inputString) > 0){
 	$outputFormat = isset($outputFormat) ? strtolower($outputFormat) : 'html';
 	
 	//Разбиваем на строки
-	$data = $rowDelimiterIsRegexp ? preg_split($rowDelimiter, $inputString) : explode($rowDelimiter, $inputString);
+	$data = $rowDelimiterIsRegexp ? preg_split($rowDelimiter, $string) : explode($rowDelimiter, $string);
 	
 	//Общее количество строк
 	$total = count($data);
